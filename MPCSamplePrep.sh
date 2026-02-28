@@ -8,13 +8,13 @@
 # everything before the last slash:
 #echo "${var%/*}"
 
-"""
-Checks folder names exceeding FOLDERTAM length
-"""
-function NumCaracteresFolder () {
+
+function CheckFolderNameLength () {
+	# Checks folder names exceeding FOLDERTAM length
+
 	find $1 -type d -print0 |         
 	while IFS= read -r -d '' file; do
-        	path="${file:${#1}}" # For ‘file’, strip ruta($1) because has no spaces
+        	path="${file:${#1}}" # For ‘file’, strip sample_path($1) because has no spaces
 
 		# Checks character length
 		lastslash="${path##*/}"	# Keeps only the last level of each directory, everything after the final slash (/)
@@ -27,12 +27,11 @@ function NumCaracteresFolder () {
 	done
 }
 
-"""
-Checks WAV filenames exceeding FILETAM length (spaces excluded)
-Flow: find WAVs → escape spaces → trim extension → count non-space chars
-"""
-function NumCaracteresFile () {
+function CheckFileNameLength () {
+	# Checks WAV filenames exceeding FILETAM length (spaces excluded)
+	# Flow: find WAVs → escape spaces → trim extension → count non-space chars
 	# TODO: Find a way to escape the & character (and other special characters), otherwise the find command below throws an error
+
 	find $1 -type f -iname '*.wav' -print0 |
 	while IFS= read -r -d '' file; do
         	# Whitespace characters are replaced with \  to allow reaching directories whose names contain spaces
@@ -44,18 +43,17 @@ function NumCaracteresFile () {
 		tam=$((${#name} - ${#res})) # Subtract the number of spaces from the filename length
 		if [ $tam -ge $FILETAM ]; then
 			echo "$sample --> $tam" >> renamefiles.log
-                        echo "******************************" >> renamefiles.log
+            echo "******************************" >> renamefiles.log
 		fi
 	done
 }
 
-"""
-Normalizes WAV files to 44.1kHz/16-bit, logs issues to badfiles.log
-Creates RS_ prefixed copies in same directory when processing needed
-"""
 function ProcessAudio (){
+	# Normalizes WAV files to 44.1kHz/16-bit, logs issues to badfiles.log
+	# Creates RS_ prefixed copies in same directory when processing needed
+
     # TODO: Find a way to escape the & character (and other special characters), otherwise the find command below throws an error
-    find $ruta -type f -iname '*.wav' -print0 |
+    find $sample_path -type f -iname '*.wav' -print0 |
     while IFS= read -r -d '' file; do
         # Whitespace characters are replaced with \  to allow reaching directories whose names contain spaces
         sample="${file//" "/\ }"
@@ -73,14 +71,14 @@ function ProcessAudio (){
                 name=$(echo "$sample" | rev | cut -d'/' -f-1 | rev)
                 newsample="$dirname/RS_$name"
                 eval "$(echo "./sox $sample -b 16 $newsample")"  
-	fi
+		fi
         # Soxi checks that the encoding is 16-bit, and stores the output in the out variable
         out=$(eval "$(echo "./sox --i -b $sample")")
         # If case of error, store the path in badfiles.txt
         if [ $? -ne 0 ]; then
                 echo "$sample" >> badfiles.log
         fi
-        # If the encoding isn't 16-bit, we process it
+        # If the encoding isn't 16-bit, process it
         if [ $out -gt 16 ]; then
                 echo "$sample" >> resamplefiles.log
 		dirname=${sample%/*}
@@ -93,7 +91,7 @@ done
 
 #****************************************MAIN*************************************
 # This path must go without whitespace characters
-ruta="/Users/chema/Desktop/MPC-Samples"
+sample_path="/Users/chema/Desktop/MPC-Samples"
 FOLDERTAM=17
 FILETAM=17
 option=1
@@ -110,12 +108,12 @@ while [ $option -ne 4 ]; do
 	read option
 
 	if [ $option -eq 1 ]; then
-		NumCaracteresFolder "$ruta"
+		CheckFolderNameLength "$sample_path"
 		echo "***********************************"
 		echo "Check log @ renamefolders.log"
 	fi
 	if [ $option -eq 2 ]; then
-		NumCaracteresFile "$ruta"
+		CheckFileNameLength "$sample_path"
 		echo "***********************************"
 		echo "Check log @ renamefiles.log"
 	fi

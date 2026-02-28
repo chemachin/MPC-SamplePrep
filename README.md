@@ -1,10 +1,10 @@
-# MPC-Sample-Prep
+# MPC-SamplePrep
 
-Utility for scanning and normalizing audio sample folders and filenames.
+Utility for scanning and normalizing audio sample, checks folders and file names for Akai MPC (tested on a MPC1000)
 
 ## Overview
 
-`CheckSample.sh` is a POSIX shell script designed to help with managing
+`MPCSamplePrep.sh` is a POSIX shell script designed to help with managing
 collections of WAV samples. It provides three main functions:
 
 1. **Folder name length check** – identifies subdirectories whose final
@@ -32,13 +32,13 @@ The script is menu driven and intended to run on Unix‑like environments
 
 1. Make the script executable:
    ```sh
-   chmod +x CheckSample.sh
+   chmod +x MPCSamplePrep.sh
    ```
 2. Edit the `sample_path`, `FOLDERTAM`, and `FILETAM` variables near the top
    of the file if the defaults do not suit your collection.
 3. Run it:
    ```sh
-   ./CheckSample.sh
+   ./MPCSamplePrep.sh
    ```
 4. Choose one of the menu options (1–3) to perform the corresponding action.
    Log output is appended to `renamefolders.log`, `renamefiles.log`,
@@ -52,13 +52,8 @@ The script is menu driven and intended to run on Unix‑like environments
 
 ## Notes & Caveats
 
-* Triple‑quoted blocks in the script are not valid shell comments and will
-  produce errors; they exist purely for documentation and should be replaced
-  with `#` comments if the script is used.
 * Filenames containing `&` or other shell‑metacharacters may still break the
   `find` command; process with caution or escape them manually.
-* The script uses `eval` unnecessarily in a few places; these could be
-  simplified without changing behavior.
 
 ## License
 
